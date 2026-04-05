@@ -1,33 +1,32 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData) {
-  // In a real app, you'd validate the credentials against a database
-  const email = formData.get("email");
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
 
-  if (email) {
-    // Set a session cookie
-    cookies().set("auth_session", email.toString(), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 7, // One week
-      path: "/",
-    });
-    redirect("/dashboard");
-  } else {
+  if (!email || !password) {
+    redirect("/login?error=Email and password are required");
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (error) {
     redirect("/login?error=Invalid credentials");
   }
+
+  redirect("/dashboard");
 }
 
 export async function logout() {
-  // Clear the session cookie
-  cookies().set("auth_session", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: -1, // Expire immediately
-    path: "/",
-  });
+  const supabase = await createClient();
+  await supabase.auth.signOut();
   redirect("/login");
 }

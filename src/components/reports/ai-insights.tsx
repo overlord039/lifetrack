@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { runFlow } from "@genkit-ai/next/client";
+import { getFinancialInsights } from "@/lib/actions/insights";
 import { type GenerateFinancialInsightsInput, type GenerateFinancialInsightsOutput } from "@/ai/flows/generate-financial-insights";
 import { Lightbulb, Terminal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +26,7 @@ export function AiInsights({ initialData }: AiInsightsProps) {
     setInsights([]);
 
     try {
-      const result = await runFlow<GenerateFinancialInsightsOutput, GenerateFinancialInsightsInput>('generateFinancialInsightsFlow', initialData);
+      const result = await getFinancialInsights(initialData);
       setInsights(result.insights);
     } catch (e) {
       const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
